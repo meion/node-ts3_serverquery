@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import Log from './Log';
-import Connection from './Connection';
-import Client from './Client';
+import { PluginAPI } from './Client';
 
 // Broadcasted events from client
 // connected() {}
@@ -11,18 +10,18 @@ import Client from './Client';
 // unload() {}
 export default class Plugin {
     config: any;
-    connection: Connection | null;
-    client: Client | null;
+    api: PluginAPI;
 
     constructor(defaultConfig: any) {
         this.config = defaultConfig;
-        this.connection = null;
-        this.client = null;
     }
-    load(connection: Connection, client: Client) {
-        this.connection = connection;
-        this.client = client;
+    load(api: PluginAPI) {
+        this.api = api;
     }
+
+    /**
+     * @param configFile Absolute path to config file
+     */
     async loadConfig(configFile: string) {
         const url = new URL("file://");
         url.pathname = configFile;

@@ -39,6 +39,11 @@ export default class DataStore {
         this.connection = connection;
         this.store = {};
         this.storeList = {};
+
+        this.fetchInfo = this.fetchInfo.bind(this);
+        this.fetchList = this.fetchList.bind(this);
+        this.forceInfoUpdate = this.forceInfoUpdate.bind(this);
+        this.forceListUpdate = this.forceListUpdate.bind(this);
     }
 
     getCacheTime(cache: Cache, default_expire: number, noCache: boolean): number {

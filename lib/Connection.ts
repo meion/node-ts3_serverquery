@@ -74,6 +74,13 @@ export default class Connection {
         this.connectionCallback = this.connectionCallback.bind(this);
         this.errorHook = this.errorHook.bind(this);
 
+        this.registerEvent = this.registerEvent.bind(this);
+        this.unregisterEvent = this.unregisterEvent.bind(this);
+
+        this.send = this.send.bind(this);
+        this.connected = this.connected.bind(this);
+        this.connecting = this.connecting.bind(this);
+
         this.connection = this.init(config);
     }
 

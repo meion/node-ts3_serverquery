@@ -15,6 +15,22 @@ type PluginObject = {
     version?: string | number;
 };
 
+export interface PluginAPI {
+    getSelf(): TS_whoami;
+    send(cmd: string, args?: object | string[], options?: CommandOptions, priority?: number): Promise<any>;
+
+    connected(): boolean;
+    connecting(): boolean;
+
+    fetchList(list: string, noCache?: boolean): Promise<any[]>;
+    fetchInfo(list: string, keyName: string, keyValue: string | number, noCache?: boolean): Promise<any>;
+    forceListUpdate(list: string, key: string, id: string | number, args: object): void;
+    forceInfoUpdate(list: string, id: string | number, args: object): void;
+
+    registerEvent(event: string, options: object, callbacks: {[hook: string]: Function}, id: string): void;
+    unregisterEvent(event: string, hooks: string[], id: string): void;
+};
+
 export default class Client {
     connection: Connection;
     plugins: {[pluginName: string]: PluginObject};
@@ -22,6 +38,7 @@ export default class Client {
     commands: object;
     inited: boolean;
     me: TS_whoami;
+    pluginAPI: PluginAPI;
 
     constructor(connection: Connection, config: BotConfig) {
         this.connection = connection;
@@ -35,6 +52,21 @@ export default class Client {
         this.config = config;
         this.commands = {};
         this.inited = false;
+
+        this.getSelf = this.getSelf.bind(this);
+
+        this.pluginAPI = {
+            getSelf: this.getSelf,
+            send: this.connection.send,
+            connected: this.connection.connected,
+            connecting: this.connection.connecting,
+            fetchInfo: this.connection.store.fetchInfo,
+            fetchList: this.connection.store.fetchList,
+            forceInfoUpdate: this.connection.store.forceInfoUpdate,
+            forceListUpdate: this.connection.store.forceListUpdate,
+            registerEvent: this.connection.registerEvent,
+            unregisterEvent: this.connection.unregisterEvent
+        };
 
         this.reloadPlugins();
     }
@@ -107,7 +139,8 @@ export default class Client {
                 version: plugin.VERSION,
                 loaded: true
             };
-            this.plugins[pluginName].plugin.load(this.connection, this);
+            // this.plugins[pluginName].plugin.load(this.connection, this);
+            this.plugins[pluginName].plugin.load(this.pluginAPI);
             this.config.plugins[pluginName] = true;
             if (this.connection.connected()) {
                 this.notify(this.plugins[pluginName], 'connected', this.connection).then(() => {
@@ -142,10 +175,6 @@ export default class Client {
     }
     registerPluginEvent() {
 
-    }
-
-    showHelp(cmd?: string) {
-        return this.connection.send('help', [cmd]);
     }
 
     login(username: string, password: string) {
